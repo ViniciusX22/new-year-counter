@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <title>Ano Novo</title>
+    <script src="jquery-3.2.1.min.js"></script>
+    <meta charset="utf-8" />
+    <style type="text/css">
+      @font-face {
+        font-family: "Comfortaa Light";
+        src: url("comfortaa-light-webfont.woff2") format("woff2"),
+          url("comfortaa-light-webfont.woff") format("woff");
+        font-weight: normal;
+        font-style: normal;
+      }
+
+      @font-face {
+        font-family: "Comfortaa Bold";
+        src: url("comfortaa-bold-webfont.woff2") format("woff2"),
+          url("comfortaa-bold-webfont.woff") format("woff");
+        font-weight: bold;
+        font-style: normal;
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(100%);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0%);
+        }
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+
+        to {
+          opacity: 1;
+        }
+      }
+
+      body {
+        color: black;
+        background-color: white;
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        overflow: hidden;
+      }
+
+      h1 {
+        font-size: 8em;
+      }
+
+      h3 {
+        font-size: 2.5em;
+      }
+
+      p,
+      h1,
+      h3 {
+        margin: 0;
+      }
+
+      #count-area {
+        text-align: center;
+        font-family: "Comfortaa Light";
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+        align-items: center;
+        height: 100vh;
+        width: 100vw;
+        animation-name: fadeIn;
+        animation-duration: 3s;
+        animation-fill-mode: forwards;
+        opacity: 0;
+      }
+
+      #count-area div {
+        display: flex;
+        flex-direction: column;
+      }
+
+      p {
+        position: absolute;
+        font-family: "Comfortaa Bold";
+        font-size: 2em;
+        display: block;
+        opacity: 0;
+        animation-duration: 1.5s;
+        animation-name: fadeInUp;
+        animation-timing-function: cubic-bezier(0.17, 0.84, 0.44, 1);
+        animation-fill-mode: forwards;
+      }
+
+      #faltam {
+        top: 5vh;
+        left: 3vw;
+      }
+
+      #ano-novo {
+        bottom: 5vh;
+        right: 3vw;
+        animation-delay: 0.75s;
+      }
+
+      @media (max-width: 768px) {
+        #count-area {
+          flex-direction: column;
+          flex-wrap: nowrap;
+          height: 80vh;
+          top: 10vh;
+          position: relative;
+        }
+
+		#count-area div {
+			flex: 1;
+		}
+
+        p {
+          font-size: 1.5em;
+        }
+
+        h1 {
+          font-size: 4em;
+          flex: 1;
+        }
+
+        h3 {
+          font-size: 1.2em;
+          flex: 1;
+        }
+
+        #faltam {
+          top: 1vh;
+        }
+
+        #ano-novo {
+          bottom: 1vh;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <p id="faltam">Faltam:</p>
+    <div id="count-area">
+      <div id="month">
+        <h1></h1>
+        <h3>Meses</h3>
+      </div>
+      <div id="day">
+        <h1></h1>
+        <h3>Dias</h3>
+      </div>
+      <div id="hour">
+        <h1></h1>
+        <h3>Horas</h3>
+      </div>
+      <div id="minute">
+        <h1></h1>
+        <h3>Minutos</h3>
+      </div>
+      <div id="second">
+        <h1></h1>
+        <h3>Segundos</h3>
+      </div>
+    </div>
+    <p id="ano-novo">para o Ano Novo</p>
+    <script type="text/javascript">
+      var mode = { randomColor: true, changing: true }; // cores aleatórias
+      // variáveis para refrênciar os elementos
+      var month, day, hour, minute, second;
+      // variáveis para armazenar os valores da data
+      var mth, dy, hr, min, sec;
+      // objeto Date
+      var date;
+      // define qual a quantidade de dias de cada mês, de Janeiro á Dezembro
+      var whichSub = [
+        31, // Janeiro
+        null, // Fevereiro
+        31, // Março
+        30, // Abril
+        31, // Maio
+        30, // Junho
+        31, // Julho
+        31, // Agosto
+        30, // Setembro
+        31, // Outubro
+        30, // Novembro
+        31 // Dezembro
+      ];
+
+      var h, s;
+
+      window.onload = function() {
+        if (mode.randomColor) setRandomColor();
+        if (mode.changing) setInterval(changeColor, 100);
+
+        // pega a referência dos elementos
+        month = document.querySelector("#month h1");
+        day = document.querySelector("#day h1");
+        hour = document.querySelector("#hour h1");
+        minute = document.querySelector("#minute h1");
+        second = document.querySelector("#second h1");
+
+        // cria um novo objeto Date
+        date = new Date();
+
+        whichSub[1] = date.getFullYear() % 4 == 0 ? 29 : 28; // verifica se é ano bissexto
+
+        $("#ano-novo").text("para " + (date.getFullYear() + 1)); // coloca o próximo ano na tela
+
+        // atualiza os valores e imprime eles na tela
+        refresh();
+
+        // define um intervalo de 1 segundo para atualizar novamente
+        setInterval(refresh, 1000);
+      };
+
+      // muda um pouco a cor atual
+      function changeColor() {
+        let amount = 1;
+
+        h = normalizeHue(
+          h + amount //* (Math.round(Math.random()) == 1 ? 1 : -1)
+        );
+        s = normalizeSat(
+          s + amount * (Math.round(Math.random()) == 1 ? 1 : -1)
+        );
+
+        $("body").css("color", "hsl(" + h + "," + s + "%, 25%)");
+
+        $("body").css("background-color", "hsl(" + h + "," + s + "%, 90%)");
+      }
+
+      function refresh() {
+        // pega os valores separadamente através do objeto Date
+        mth = 12 - (date.getMonth() + 1); // Subtrai o equivalente ao restante
+        dy = whichSub[date.getMonth()] - date.getDate(); // Subtrai o equivalente ao restante, de acordo com whichSub
+        hr = 24 - date.getHours(); // Subtrai o equivalente ao restante
+        min = 60 - date.getMinutes(); // Subtrai o equivalente ao restante
+        var tmp_sec = date.getSeconds(); // Subtrai o equivalente ao restante
+        sec = 59 - tmp_sec; // Subtrai o equivalente ao restante
+
+        date.setSeconds(tmp_sec + 1); // incrementa os segundos
+
+        // atualiza o conteúdo dos elemento de acordo com os valores adquiridos
+        month.innerHTML = mth;
+        if (mth == 1) $("#month h3").text("Mês");
+        else $("#month h3").text("Meses");
+
+        day.innerHTML = dy;
+        if (dy == 1) $("#day h3").text("Dia");
+        else $("#day h3").text("Dias");
+
+        hour.innerHTML = hr;
+        if (hr == 1) $("#hour h3").text("Hora");
+        else $("#hour h3").text("Horas");
+
+        minute.innerHTML = min;
+        if (min == 1) $("#minute h3").text("Minuto");
+        else $("#minute h3").text("Minutos");
+
+        second.innerHTML = sec;
+        if (sec == 1) $("#second h3").text("Segundo");
+        else $("#second h3").text("Segundos");
+      }
+
+      // define cores aleatórias para o texto e fundo da página
+      function setRandomColor() {
+        h = Math.round(Math.random() * 360);
+        s = Math.round(Math.random() * 100);
+        let color = "hsl(" + h + ", " + s + "%, 25%)";
+        let backgroundColor = "hsl(" + h + ", " + s + "%, 90%)";
+
+        $("body").css({ color: color, backgroundColor: backgroundColor });
+      }
+
+      function normalizeHue(h) {
+        if (h > 360) return 0;
+        else if (h < 0) return 360;
+        else return h;
+      }
+
+      function normalizeSat(s) {
+        return Math.max(0, Math.min(100, s));
+      }
+    </script>
+  </body>
+</html>
